@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Net;
+using System.Linq;
+using System.Text;
 using SharpPcap;
 using SharpPcap.LibPcap;
+using PacketDotNet;
 
 namespace Network_sniffer
 {
@@ -17,28 +21,48 @@ namespace Network_sniffer
             }
             Console.WriteLine("");
 
+            int counter = 0;
+
             var used_interface = network_interfaces[0];
+            used_interface.Open(DeviceModes.Promiscuous);
 
             used_interface.OnPacketArrival += (sender, packet) =>
-            {
-                Console.WriteLine("timestamp:");
-                Console.WriteLine("src MAC:");
-                Console.WriteLine("dst MAC:");
-                Console.WriteLine("frame lenght:");
-                Console.WriteLine("src IP:");
-                Console.WriteLine("dst IP:");
-                Console.WriteLine("src port:");
-                Console.WriteLine("dst port:");
-                Console.WriteLine("");
+            { 
+                var handledPacket = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
+
+                var tcpPacket = handledPacket.Extract<PacketDotNet.UdpPacket>();
+                if (tcpPacket != null)
+                {
+                    var ipPacket = (PacketDotNet.IPPacket)tcpPacket.ParentPacket;
+                    var date = packet.Header.Timeval.Date;
+
+                    Console.WriteLine($"timestamp: {date:yyyy-MM-dd'T'HH:mm:ss.fffzzz}");
+                    Console.WriteLine("src MAC: " + packet.Device.MacAddress);
+                    Console.WriteLine("dst MAC: ");
+                    Console.WriteLine("frame lenght: " + packet.Data.Length);
+                    Console.WriteLine("src IP: " + ipPacket.SourceAddress);
+                    Console.WriteLine("dst IP: " + ipPacket.DestinationAddress);
+                    Console.WriteLine("src port: " + tcpPacket.SourcePort);
+                    Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
+                    Console.WriteLine("");
+
+                    counter++;
+                    if (counter > 3)
+                    {
+                        used_interface.StopCapture();
+                        used_interface.Close();
+                        Environment.Exit(1);
+                    }
+                } 
+                
             };
 
-            used_interface.Open(DeviceModes.Promiscuous);
             used_interface.StartCapture();
+            while(true)
+            {
 
-            Console.ReadLine(); // stop capturing
-            used_interface.StopCapture();
-            used_interface.Close();
-
+            }
+            
         }
     }
 }
