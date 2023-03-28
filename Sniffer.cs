@@ -57,6 +57,13 @@ namespace Network_sniffer
                 
             };
 
+            Console.CancelKeyPress += delegate(object? sender, ConsoleCancelEventArgs e)  // https://learn.microsoft.com/en-us/dotnet/api/system.console.cancelkeypress?view=net-7.0
+            {
+                used_interface.StopCapture();
+                used_interface.Close();
+                Environment.Exit(0);
+            };
+
             used_interface.StartCapture();
             while(true)
             {
