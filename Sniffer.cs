@@ -29,7 +29,15 @@ namespace Network_sniffer
                 Console.WriteLine("dst IP:");
                 Console.WriteLine("src port:");
                 Console.WriteLine("dst port:");
+                Console.WriteLine("");
             };
+
+            used_interface.Open(DeviceModes.Promiscuous);
+            used_interface.StartCapture();
+
+            Console.ReadLine(); // stop capturing
+            used_interface.StopCapture();
+            used_interface.Close();
 
         }
     }
