@@ -160,6 +160,79 @@ namespace Network_sniffer
             return filter_arr;
         }
 
+        static void print_hex(Packet handledPacket)
+        {
+            string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
+            for (int i = 3; i < packet_hexdump.Length-1; i++)
+            {
+                var hexdump_line = packet_hexdump[i].Substring(6);
+        
+                hexdump_line = hexdump_line.Remove(4, 1);
+                hexdump_line = hexdump_line.Remove(28, 1);
+                hexdump_line = hexdump_line.Remove(52, 1);
+                hexdump_line = hexdump_line.Remove(53, 1);
+                            
+                Console.WriteLine("0x" + hexdump_line);    
+            }
+        }
+
+        private static void packet_handling(object sender, PacketCapture packet, int packet_cnt, int num_of_packets, ILiveDevice used_interface)
+        {
+            var handled_packet = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
+            var eth_packet = handled_packet.Extract<PacketDotNet.EthernetPacket>();
+            var ip_packet = handled_packet.Extract<PacketDotNet.IPPacket>();
+            var tcpPacket = handled_packet.Extract<PacketDotNet.TcpPacket>();                
+            var udpPacket = handled_packet.Extract<PacketDotNet.UdpPacket>();
+
+            if (eth_packet != null)
+            {
+                var date = packet.Header.Timeval.Date;  
+                var source_MAC = "src MAC: " + eth_packet.SourceHardwareAddress;
+                var destination_MAC = "dst MAC: " + eth_packet.DestinationHardwareAddress;
+
+                for (int cnt = 19; cnt >= 11; cnt = cnt - 2)
+                {
+                    source_MAC = source_MAC.Insert(cnt, ":");
+                    destination_MAC = destination_MAC.Insert(cnt, ":");
+                }
+
+                Console.WriteLine($"timestamp: {date:yyyy-MM-dd'T'HH:mm:ss.fffzzz}");
+                Console.WriteLine(source_MAC );
+                Console.WriteLine(destination_MAC);
+                Console.WriteLine("frame lenght: " + packet.Data.Length + " bytes");
+
+                if (ip_packet != null)
+                {   
+                    Console.WriteLine("src IP: " + ip_packet.SourceAddress);
+                    Console.WriteLine("dst IP: " + ip_packet.DestinationAddress);
+                }
+
+                if (tcpPacket != null || udpPacket != null)
+                {
+                    if (tcpPacket != null)
+                    {
+                        Console.WriteLine("src port: " + tcpPacket.SourcePort);
+                        Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
+                    }
+                    else
+                    {
+                        Console.WriteLine("src port: " + udpPacket.SourcePort);
+                        Console.WriteLine("dst port: " + udpPacket.DestinationPort);       
+                    }
+                }   
+                Console.WriteLine("");
+
+                print_hex(handled_packet);
+                Console.WriteLine("");
+                if (++packet_cnt >= num_of_packets)
+                {
+                    used_interface.StopCapture();
+                    used_interface.Close();
+                    Environment.Exit(0);
+                } 
+            }
+        }
+
         static void Main(string[] args)
         {
             string protocol_filter;
@@ -207,72 +280,7 @@ namespace Network_sniffer
 
             used_interface.OnPacketArrival += (sender, packet) =>
             { 
-                var handledPacket = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
-                var eth_packet = handledPacket.Extract<PacketDotNet.EthernetPacket>();
-                var ip_packet = handledPacket.Extract<PacketDotNet.IPPacket>();
-                var tcpPacket = handledPacket.Extract<PacketDotNet.TcpPacket>();
-                var udpPacket = handledPacket.Extract<PacketDotNet.UdpPacket>();
-
-                if (eth_packet != null)
-                {
-                    var date = packet.Header.Timeval.Date;  
-                    var source_MAC = "src MAC: " + eth_packet.SourceHardwareAddress;
-                    var destination_MAC = "dst MAC: " + eth_packet.DestinationHardwareAddress;
-
-                    for (int cnt = 19; cnt >= 11; cnt = cnt - 2)
-                    {
-                        source_MAC = source_MAC.Insert(cnt, ":");
-                        destination_MAC = destination_MAC.Insert(cnt, ":");
-                    }
-
-                    Console.WriteLine($"timestamp: {date:yyyy-MM-dd'T'HH:mm:ss.fffzzz}");
-                    Console.WriteLine(source_MAC );
-                    Console.WriteLine(destination_MAC);
-                    Console.WriteLine("frame lenght: " + packet.Data.Length + " bytes");
-
-                    if (ip_packet != null)
-                    {   
-                        Console.WriteLine("src IP: " + ip_packet.SourceAddress);
-                        Console.WriteLine("dst IP: " + ip_packet.DestinationAddress);
-                    }
-
-                    if (tcpPacket != null || udpPacket != null)
-                    {
-                        if (tcpPacket != null)
-                        {
-                            Console.WriteLine("src port: " + tcpPacket.SourcePort);
-                            Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
-                        }
-                        else
-                        {
-                            Console.WriteLine("src port: " + udpPacket.SourcePort);
-                            Console.WriteLine("dst port: " + udpPacket.DestinationPort);       
-                        }
-                    }   
-                    Console.WriteLine("");
-
-                    string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
-                    for (int i = 3; i < packet_hexdump.Length-1; i++)
-                    {
-                        var hexdump_line = packet_hexdump[i].Substring(6);
-                        
-                        hexdump_line = hexdump_line.Remove(4, 1);
-                        hexdump_line = hexdump_line.Remove(28, 1);
-                        hexdump_line = hexdump_line.Remove(52, 1);
-                        hexdump_line = hexdump_line.Remove(53, 1);
-                            
-                        Console.WriteLine("0x" + hexdump_line);    
-                    }
-                    Console.WriteLine("");
-
-                    if (++packet_cnt > num_of_packets)
-                    {
-                        used_interface.StopCapture();
-                        used_interface.Close();
-                        Environment.Exit(1);
-                    }
-                } 
-                
+                packet_handling(sender, packet, packet_cnt, num_of_packets, used_interface);
             };
 
             Console.CancelKeyPress += delegate(object? sender, ConsoleCancelEventArgs e)  // https://learn.microsoft.com/en-us/dotnet/api/system.console.cancelkeypress?view=net-7.0
