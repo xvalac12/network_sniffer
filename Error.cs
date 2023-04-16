@@ -14,8 +14,14 @@ namespace Network_sniffer
                 case 1:
                     Console.Error.WriteLine("Wrong argument entered");
                     break;
+                case 2:
+                    Console.Error.WriteLine("Bad or no port number after -p");
+                    break;
                 case 3:
                     Console.Error.WriteLine("Entered port without using --tcp|-t or --udp|-u");
+                    break;
+                case 4:
+                    Console.Error.WriteLine("Bad or no number after -n");
                     break;
                 case 5:
                     Console.Error.WriteLine("Wrong or no interface name entered");
