@@ -251,6 +251,20 @@ namespace Network_sniffer
                     }   
                     Console.WriteLine("");
 
+                    string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
+                    for (int i = 3; i < packet_hexdump.Length-1; i++)
+                    {
+                        var hexdump_line = packet_hexdump[i].Substring(6);
+                        
+                        hexdump_line = hexdump_line.Remove(4, 1);
+                        hexdump_line = hexdump_line.Remove(28, 1);
+                        hexdump_line = hexdump_line.Remove(52, 1);
+                        hexdump_line = hexdump_line.Remove(53, 1);
+                            
+                        Console.WriteLine("0x" + hexdump_line);    
+                    }
+                    Console.WriteLine("");
+
                     if (++packet_cnt > num_of_packets)
                     {
                         used_interface.StopCapture();
