@@ -24,7 +24,11 @@ namespace Network_sniffer
             {
                 Error.print_error(7);
             }
-            
+
+            if (args.Length == 1 && (args[0] != "-i" && args[0] != "--interface" ))
+            {
+                Error.print_error(1);
+            }            
             string [] filter_arr = new string[10];
             int filter_cnt = 0;
             bool print_flag = true;
