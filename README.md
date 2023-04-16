@@ -23,62 +23,62 @@ Finally, the application captures packets using the `CaptureDevice` class from t
 ## Error class
 This class is responsible for handling errors that may occur during the execution of the application. Method `print_error()` takes an integer error code as its parameter and prints the appropriate error message to the standard error stream. After printing the error message, it also prints the usage information for the Network_sniffer program and exits the program with the specified error code.
 
-|Error Code	| Error Message                                                                        |
-|-----------|--------------------------------------------------------------------------------------|
-| 1	      | Wrong argument entered                                                               |
-| 2	      | Bad or no port number after -p                                                       |
-| 3	      | Entered port without using --tcp                                                     |
-| 4	      | Bad or no number after -n                                                            |
-| 5	      | Wrong or no interface name entered                                                   |
-| 6	      | Interface wasn't opened. Maybe you are not launching program with root permission?   |
-| 7	      | You can't enter arguments more times                                                 |
-| 99	      | Internal Error                                                                       |
+|Error Code	| Error Message                                                                         |
+|-----------|---------------------------------------------------------------------------------------|
+| 1	        | Wrong argument entered                                                                |
+| 2	        | Wrong or no port number after -p                                                      |
+| 3	        | Entered port without using --tcp\|-t or --udp\|-u                                     |
+| 4	        | Wrong or no number after -n                                                           |
+| 5	        | Wrong or no interface name entered                                                    |
+| 6	        | Interface wasn't opened. Maybe you are not launching program with root permission?    |
+| 7	        | You can't enter arguments more times                                                  |
+| 99	    | Internal Error                                                                        |
 
 
 ## Structure of packets
 
-### TCP packet structure
-| Field | Length | Description |
-|----|---|--|
-| Source Port | 2 bytes | The port number on the sender's device |
-| Destination Port | 2 bytes | The port number on the recipient's device |
-| Sequence Number | 4 bytes | Used to keep track of the order of data packets sent between the sender and recipient
-| Acknowledgment Number | 4 bytes | Used to acknowledge receipt of data packets by the recipient
-| Data Offset | 4 bytes | Size of the TCP header
-| Reserved | 6 bytes | These bits are reserved for future use
-| Flags | 6 bytes | This field contains several flags that control the behavior
-| Window Size | 2 bytes | The number of bytes the sender is willing to receive before it expects an ACK
-| Checksum | 2 bytes | This is used to detect errors
-| Urgent Pointer | 2 bytes | This is used to indicate the location of urgent data
-| Options | variable | Additional TCP options
+### TCP Header packet structure
+| Field                 | Length    | Description                                                                           |
+|-----------------------|-----------|---------------------------------------------------------------------------------------|
+| Source Port           | 2 bytes   | The port number on the sender's device                                                |
+| Destination Port      | 2 bytes   | The port number on the recipient's device                                             |
+| Sequence Number       | 4 bytes   | Used to keep track of the order of data packets sent between the sender and recipient |
+| Acknowledgment Number | 4 bytes   | Used to acknowledge receipt of data packets by the recipient                          |
+| Data Offset           | 4 bits   | Size of the TCP header                                                                |
+| Reserved              | 6 bits   | These bits are reserved for future use                                                |
+| Flags                 | 6 bits   | This field contains several flags that control the behavior                           |
+| Window Size           | 2 bytes   | The number of bytes the sender is willing to receive before it expects an ACK         |
+| Checksum              | 2 bytes   | This is used to detect errors                                                         |
+| Urgent Pointer        | 2 bytes   | This is used to indicate the location of urgent data                                  |
+| Options               | variable  | Additional TCP options                                                                |
 
-### UDP Packet
-| Field | Length | Description |
-|----|---|--|
-| Source Port | 2 bytes | The port number on the sender's device |
-| Destination Port | 2 bytes | The port number on the recipient's device |
-| Length | 2 bytes | The length of the entire UDP packet
-| Checksum | 2 bytes | This is used to detect errors
+### UDP Header Packet structure
+| Field             | Length    | Description                               |
+|-------------------|-----------|-------------------------------------------|
+| Source Port       | 2 bytes   | The port number on the sender's device    |
+| Destination Port  | 2 bytes   | The port number on the recipient's device |
+| Length            | 2 bytes   | The length of the entire UDP packet       |
+| Checksum          | 2 bytes   | This is used to detect errors             |
 
-### ICMP Packet
-| Field | Length | Description |
-|----|---|--|
-| Type | 1 byte | The port number on the sender's device
-| Code | 1 byte | The port number on the recipient's device
-| Checksum | 2 bytes |The length of the entire UDP packet
+### ICMP Header Packet
+| Field     | Length    | Description                               |
+|-----------|-----------|-------------------------------------------|
+| Type      | 1 byte    | The port number on the sender's device    |
+| Code      | 1 byte    | The port number on the recipient's device |
+| Checksum  | 2 bytes   | The length of the entire UDP packet       |
 
 ### ARP Packet
-| Field  | Size | Description                                    |
-|--------|-------------|------------------------------------------------|
-| Hardware Type | 2 bytes | Specifies the type of NIC hardware being used |
-| Protocol Type | 2 bytes | Specifies the type of protocol addresses in upper protocol|
-| Hardware length | 1 byte | Specifies the length of the hardware address |
-| Protocol length | 1 byte | Specifies the length of the protocol address |
-| Operation | 2 bytes | Specifies the type of ARP packet, such as request or reply |
-| Source HW Address | 6 bytes | Specifies the sender's hardware address |
-| Source Prot. Address | 4 bytes| Specifies the sender's protocol address |
-| Target HW Address | 6 bytes | Specifies the target's hardware address |
-| Target Prot. Address | 4 bytes | Specifies the target's protocol address |
+| Field                 | Size      | Description                                                   |
+|-----------------------|-----------|---------------------------------------------------------------|
+| Hardware Type         | 2 bytes   | Specifies the type of NIC hardware being used                 |
+| Protocol Type         | 2 bytes   | Specifies the type of protocol addresses in upper protocol    |
+| Hardware length       | 1 byte    | Specifies the length of the hardware address                  |
+| Protocol length       | 1 byte    | Specifies the length of the protocol address                  |
+| Operation             | 2 bytes   | Specifies the type of ARP packet, such as request or reply    |
+| Source HW Address     | 6 bytes   | Specifies the sender's hardware address                       |
+| Source Prot. Address  | 4 bytes   | Specifies the sender's protocol address                       |
+| Target HW Address     | 6 bytes   | Specifies the target's hardware address                       |
+| Target Prot. Address  | 4 bytes   | Specifies the target's protocol address                       |
 
 ## Testing
 Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS and Ubuntu 22.04 (linux-x64). On the left is output of application, on the right is comparison with wireshark application.
@@ -99,6 +99,10 @@ Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS a
 ![NIX tcp](tests/tcp_nix.png)
 ![NIX ndp](tests/ndp_nix.png)
 
+	Here's a sentence with a footnote. [^1]
+
+[^1]: This is the footnote.
+
 ## Bibliography
 
  - Contributors to Wikimedia projects. [Duplex (Telecommunications) - Wikipedia.](https://en.wikipedia.org/wiki/Duplex_(telecommunications)) _Wikipedia, the Free Encyclopedia_, Wikimedia Foundation, Inc., 25 June 2005,.
@@ -106,3 +110,7 @@ Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS a
  - [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_ . Accessed 21 Mar. 2023.
 
 http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf
+https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages
+
+https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp#:~:text=Packet%20format&text=The%20IP%20data%20section%20is,size%20of%20the%20options%20field.
+
