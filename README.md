@@ -109,7 +109,7 @@ This class is responsible for handling errors that may occur during the executio
 | Target Prot. Address  | 4 bytes   | Specifies the target's protocol address                       |
 
 ## Testing
-Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS and Ubuntu 22.04 (linux-x64). On the left is output of application, on the right is comparison with wireshark application.
+Testing was performed on two operation systems: Nix OS and Ubuntu 22.04 (linux-x64). On the left is output of application, on the right is comparison with wireshark application.
 
 ## Ubuntu 22.04 
 ### (Tests with correct input)
