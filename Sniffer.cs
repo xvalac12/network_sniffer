@@ -11,11 +11,6 @@ namespace Network_sniffer
     class Sniffer
     {
 
-        public static string Filters()
-        {
-            return Filters;
-        }
-
         static void Main(string[] args)
         {
             int packet_counter = 0;
@@ -91,7 +86,7 @@ namespace Network_sniffer
                 Environment.Exit(2);
             }
                 
-            used_interface.Filter = Filters();
+            used_interface.Filter = protocol_filter;
             used_interface.Open(DeviceModes.Promiscuous);
 
             used_interface.OnPacketArrival += (sender, packet) =>
