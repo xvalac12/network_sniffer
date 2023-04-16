@@ -208,21 +208,47 @@ namespace Network_sniffer
             used_interface.OnPacketArrival += (sender, packet) =>
             { 
                 var handledPacket = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
+                var eth_packet = handledPacket.Extract<PacketDotNet.EthernetPacket>();
+                var ip_packet = handledPacket.Extract<PacketDotNet.IPPacket>();
+                var tcpPacket = handledPacket.Extract<PacketDotNet.TcpPacket>();
+                var udpPacket = handledPacket.Extract<PacketDotNet.UdpPacket>();
 
-                var tcpPacket = handledPacket.Extract<PacketDotNet.UdpPacket>();
-                if (tcpPacket != null)
+                if (eth_packet != null)
                 {
-                    var ip_packet = (PacketDotNet.IPPacket)tcpPacket.ParentPacket;
-                    var date = packet.Header.Timeval.Date;
+                    var date = packet.Header.Timeval.Date;  
+                    var source_MAC = "src MAC: " + eth_packet.SourceHardwareAddress;
+                    var destination_MAC = "dst MAC: " + eth_packet.DestinationHardwareAddress;
+
+                    for (int cnt = 19; cnt >= 11; cnt = cnt - 2)
+                    {
+                        source_MAC = source_MAC.Insert(cnt, ":");
+                        destination_MAC = destination_MAC.Insert(cnt, ":");
+                    }
 
                     Console.WriteLine($"timestamp: {date:yyyy-MM-dd'T'HH:mm:ss.fffzzz}");
-                    Console.WriteLine("src MAC: " + packet.Device.MacAddress);
-                    Console.WriteLine("dst MAC: ");
+                    Console.WriteLine(source_MAC );
+                    Console.WriteLine(destination_MAC);
                     Console.WriteLine("frame lenght: " + packet.Data.Length + " bytes");
-                    Console.WriteLine("src IP: " + ip_packet.SourceAddress);
-                    Console.WriteLine("dst IP: " + ip_packet.DestinationAddress);
-                    Console.WriteLine("src port: " + tcpPacket.SourcePort);
-                    Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
+
+                    if (ip_packet != null)
+                    {   
+                        Console.WriteLine("src IP: " + ip_packet.SourceAddress);
+                        Console.WriteLine("dst IP: " + ip_packet.DestinationAddress);
+                    }
+
+                    if (tcpPacket != null || udpPacket != null)
+                    {
+                        if (tcpPacket != null)
+                        {
+                            Console.WriteLine("src port: " + tcpPacket.SourcePort);
+                            Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
+                        }
+                        else
+                        {
+                            Console.WriteLine("src port: " + udpPacket.SourcePort);
+                            Console.WriteLine("dst port: " + udpPacket.DestinationPort);       
+                        }
+                    }   
                     Console.WriteLine("");
 
                     if (++packet_cnt > num_of_packets)
