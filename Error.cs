@@ -26,6 +26,9 @@ namespace Network_sniffer
                 case 5:
                     Console.Error.WriteLine("Wrong or no interface name entered");
                     break;
+                case 6:
+                    Console.Error.WriteLine("Interface wasn't opened. Maybe you are not launching program with root permission?");
+                    break;
                 case 99:
                     Console.Error.WriteLine("Internal Error");
                     break;
