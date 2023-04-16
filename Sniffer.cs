@@ -43,7 +43,18 @@ namespace Network_sniffer
                         }
                         break;
                     case "-p":
-                        port = int.Parse(args[++args_cnt]);
+                        try
+                        {
+                            port = int.Parse(args[++args_cnt]);
+                        }
+                        catch
+                        {
+                            Error.print_error(2);
+                        }
+                        if (port < 0 || port > 65535)
+                        {
+                            Error.print_error(2);
+                        }
                         break;
                     case "-t":
                     case "--tcp":
@@ -80,7 +91,15 @@ namespace Network_sniffer
                         filter_cnt++;
                         break;                     
                     case "-n":
-                        num_of_packets = int.Parse(args[args_cnt]);
+                        try
+                        {
+                            num_of_packets = int.Parse(args[++args_cnt]);
+                        }
+                        catch
+                        {
+                            Error.print_error(4);
+                        }
+                        
                         break;
                     default:
                         Error.print_error(1);
