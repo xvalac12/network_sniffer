@@ -1,9 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Linq;
-using System.Text;
-using SharpPcap;
-using SharpPcap.LibPcap;
+﻿using SharpPcap;
 using PacketDotNet;
 
 namespace Network_sniffer
@@ -16,10 +11,11 @@ namespace Network_sniffer
         /// <summary>
         /// Function for handling command line arguments
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">Command line arguments from user</param>
         /// <returns>Values for filtering and handling packets</returns>
         static (string, string?, int, bool) argument_handling(string[] args)
         {
+            // check for duplicate in arguments
             if (args.Length != args.Distinct().Count())
             {
                 Error.print_error(7);
@@ -28,7 +24,8 @@ namespace Network_sniffer
             if (args.Length == 1 && (args[0] != "-i" && args[0] != "--interface" ))
             {
                 Error.print_error(1);
-            }            
+            } 
+
             string [] filter_arr = new string[10];
             int filter_cnt = 0;
             bool print_flag = true;
@@ -116,7 +113,6 @@ namespace Network_sniffer
                         {
                             Error.print_error(4);
                         }
-                        
                         break;
                     default:
                         Error.print_error(1);
@@ -137,7 +133,7 @@ namespace Network_sniffer
                 filter_arr = port_handling(filter_arr, port);
             }
 
-            // Input between every element of filter or
+            // Input between every element of filter 'or'
             string filter = string.Join(" or ", filter_arr);
 
             return (filter, name_of_interface, num_of_packets, print_flag);
@@ -217,7 +213,8 @@ namespace Network_sniffer
         /// <param name="packet_counter">Current captured packet</param>
         /// <param name="num_of_packets">Number of packets to be captured</param>
         /// <param name="used_interface">Info about sniffed interface</param>
-        private static bool packet_handling(object sender, PacketCapture packet, int packet_cnt, int num_of_packets, ILiveDevice used_interface)
+        /// <returns>True if packet was handled, false if not</returns>
+        private static bool packet_handling(object sender, PacketCapture packet, ILiveDevice used_interface)
         {
 
             var handled_packet = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
@@ -321,7 +318,7 @@ namespace Network_sniffer
 
             used_interface.OnPacketArrival += (sender, packet) =>
             { 
-                if (packet_handling(sender, packet, packet_cnt, num_of_packets, used_interface))
+                if (packet_handling(sender, packet, used_interface))
                 {
                     if (++packet_cnt >= num_of_packets)
                     {
