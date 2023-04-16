@@ -11,6 +11,30 @@ namespace Network_sniffer
     class Sniffer
     {
 
+
+        static string[] port_handling(string [] filter_arr, int? port)
+        {
+            var aux_flag = true;
+            for (int cnt = 0; cnt < filter_arr.Length; cnt++)
+            {
+                if (filter_arr[cnt] == "udp")
+                {
+                    filter_arr[cnt]  = "(udp and port " + port +")";
+                    aux_flag = false;
+                }
+                else if (filter_arr[cnt]  == "tcp")
+                {
+                    filter_arr[cnt]  = "(tcp and port " + port +")";
+                    aux_flag = false;
+                }   
+            }
+            if (aux_flag)
+            {
+                Error.print_error(3);
+            } 
+            return filter_arr;
+        }
+
         static void Main(string[] args)
         {
             string [] filter_arr = new string[args.Length - 2];
@@ -90,6 +114,22 @@ namespace Network_sniffer
                         break;
                 }
             }
+            try
+            {
+                filter_arr = filter_arr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            }
+            catch
+            {
+                Error.print_error(99);
+            }
+            
+            if (port != null)
+            {
+                filter_arr = port_handling(filter_arr, port);
+            }
+
+            // Input between every element of filter or
+            string filter = string.Join(" or ", filter_arr);
 
             CaptureDeviceList network_interfaces = CaptureDeviceList.Instance;
 
