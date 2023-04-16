@@ -1,6 +1,6 @@
 ﻿ # IPK Project 2: Network sniffer
 ## Description of the implementation
-The application is implemented in the C# programming language with the **.NET 6.0** framework using libraries from the **base SDK** (NET SDK).  The compilation is done using a **Makefile** (*dotnet clean, build and publish*) and the `make` command (`make OS=win-x64` for windows). It run with `./ipk-sniffer [-i interface | --interface interface] {-p port [--tcp|-t] [--udp|-u]} [--arp] [--icmp4] [--icmp6] [--igmp] [--mld] {-n num}`, where **interface** is interface to sniff, **port** is an integer indicating the port which we want to sniff (only with UDP and TCP protocols). It has been tested to run on Windows 11, Ubuntu 22.04 and NIX operating system. The client consists of 2 classes: `Sniffer`, `Error`. Note that this application requires root privileges to capture network traffic.
+The application is implemented in the C# programming language with the **.NET 6.0** framework using libraries from the **base SDK** (NET SDK).  The compilation is done using a **Makefile** (*dotnet clean, build and publish*) and the `make` command (`make OS=win-x64` for windows). It has been tested to run on Windows 11, Ubuntu 22.04 and NIX operating system. The client consists of 2 classes: `Sniffer`, `Error`. Note that this application requires root privileges to capture network traffic.
 
 ### Requirements
 To use this application, you will need the following:
@@ -8,6 +8,23 @@ To use this application, you will need the following:
  - C# compiler with .NET 6.0 Framework
  - SharpPcap library
  - PacketDotNet library
+
+### Command Line Arguments [5]
+`./ipk-sniffer [-i interface | --interface interface] {-p port [--tcp|-t] [--udp|-u]} [--arp] [--icmp4] [--icmp6] [--igmp] [--mld] [--ndp] {-n num}`
+
+Arguments can be in any order and unless protocols are explicitly specified, all protocols are considered for printing.
+
+`-i|--interface interface` - interface to sniff, if this parameter is not specified or name of interface is not specified, list of avaible interfaces is printed
+`--tcp|-t` - display TCP segments
+`--udp|-u` - display UDP datagrams
+`-p port` - extends TCP and UDP protocols, can be used as source and destination part, it has to be used as combination with `--tcp|-t` or `--udp|-u `
+`--arp` - display ARP frames
+`--icmp4` - display ICMPv4 echo   
+`--icmp6` - display ICMPv6 echo
+`--ndp` - display NDP packet
+`--igmp` - display IGMP packet
+`--mld` - display MLD packet
+`-n num` - number of packets to display, if not specified, display 1 packet
 
 ## Sniffer class
 
@@ -37,7 +54,7 @@ This class is responsible for handling errors that may occur during the executio
 
 ## Structure of packets
 
-### TCP Header packet structure
+### TCP packet header structure [1]
 | Field                 | Length    | Description                                                                           |
 |-----------------------|-----------|---------------------------------------------------------------------------------------|
 | Source Port           | 2 bytes   | The port number on the sender's device                                                |
@@ -52,7 +69,7 @@ This class is responsible for handling errors that may occur during the executio
 | Urgent Pointer        | 2 bytes   | This is used to indicate the location of urgent data                                  |
 | Options               | variable  | Additional TCP options                                                                |
 
-### UDP Header Packet structure
+### UDP packet header structure [2]
 | Field             | Length    | Description                               |
 |-------------------|-----------|-------------------------------------------|
 | Source Port       | 2 bytes   | The port number on the sender's device    |
@@ -60,14 +77,14 @@ This class is responsible for handling errors that may occur during the executio
 | Length            | 2 bytes   | The length of the entire UDP packet       |
 | Checksum          | 2 bytes   | This is used to detect errors             |
 
-### ICMP Header Packet
+### ICMP packet header structure [3]
 | Field     | Length    | Description                               |
 |-----------|-----------|-------------------------------------------|
 | Type      | 1 byte    | The port number on the sender's device    |
 | Code      | 1 byte    | The port number on the recipient's device |
 | Checksum  | 2 bytes   | The length of the entire UDP packet       |
 
-### ARP Packet
+### ARP frame structure [4]
 | Field                 | Size      | Description                                                   |
 |-----------------------|-----------|---------------------------------------------------------------|
 | Hardware Type         | 2 bytes   | Specifies the type of NIC hardware being used                 |
@@ -83,34 +100,46 @@ This class is responsible for handling errors that may occur during the executio
 ## Testing
 Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS and Ubuntu 22.04 (linux-x64). On the left is output of application, on the right is comparison with wireshark application.
 
-### Ubuntu 22.04
+## Ubuntu 22.04 
+### (Tests with correct input)
+
+`./ipk-sniffer -i wlp0s20f3 -arp`
 ![Ubuntu 22.04 arp](tests/arp_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -arp`
 ![Ubuntu 22.04 icmpv4](tests/icmpv4_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -icmpv4`
 ![Ubuntu 22.04 icmpv6](tests/icmpv6_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -tcp -p 443`
 ![Ubuntu 22.04 tcp with port](tests/tcp_with_port_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -tcp`
 ![Ubuntu 22.04 tpc without port](tests/tcp_without_port_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -udp`
 ![Ubuntu 22.04 udp](tests/udp_ubuntu.png)
+`./ipk-sniffer -i wlp0s20f3 -igmp`
 ![Ubuntu 22.04 igmp](tests/igmp_ubuntu.png)
 
+### (Tests with incorrect input or other error)
+
+
+
 ### NIX
+`./ipk-sniffer -i enp03s -igmp`
 ![NIX igmp](tests/igmp_nix.png)
+`./ipk-sniffer -i enp03s -imcpv6`
 ![NIX icmpv6](tests/imcpv6_nix.png)
+`./ipk-sniffer -i enp03s -udp`
 ![NIX udp](tests/udp_nix.png)
+`./ipk-sniffer -i enp03s -tcp`
 ![NIX tcp](tests/tcp_nix.png)
+`./ipk-sniffer -i enp03s-ndp`
 ![NIX ndp](tests/ndp_nix.png)
-
-	Here's a sentence with a footnote. [^1]
-
-[^1]: This is the footnote.
 
 ## Bibliography
 
- - Contributors to Wikimedia projects. [Duplex (Telecommunications) - Wikipedia.](https://en.wikipedia.org/wiki/Duplex_(telecommunications)) _Wikipedia, the Free Encyclopedia_, Wikimedia Foundation, Inc., 25 June 2005,.
- - [TCP vs UDP: What’s the Difference?](https://www.javatpoint.com/tcp-vs-udp) - _Javatpoint_. Accessed 21 Mar. 2023.
- - [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_ . Accessed 21 Mar. 2023.
+ - [1][Transmission Control Protocol (TCP)](https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp#:~:text=Packet%20format&text=The%20IP%20data%20section%20is,size%20of%20the%20options%20field) - _Khan Academy_. Accessed 16 Apr. 2023.
+ - [2][UDP Protocol | User Datagram Protocol](https://www.javatpoint.com/udp-protocol#:~:text=UDP%20Header%20Format,would%20be%2065%2C535%20minus%2020) - _Javatpoint_. Accessed 16 Apr. 2023.
+ - [3][What Is ICMP Protocol.](https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages) - _Online Courses and EBooks Library_. Accessed 16 Apr. 2023.
+ - [4][Address Resolution Protocol (ARP)](http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf) - _Newpaltz_. Accessed 16 Apr. 2023.
+ -  [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_. Accessed 21 Mar. 2023.
 
-http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf
-https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages
-
-https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp#:~:text=Packet%20format&text=The%20IP%20data%20section%20is,size%20of%20the%20options%20field.
 
