@@ -9,7 +9,7 @@ To use this application, you will need the following:
  - SharpPcap library
  - PacketDotNet library
 
-### Command Line Arguments [5]
+### Command Line Arguments
 `./ipk-sniffer [-i interface | --interface interface] {-p port [--tcp|-t] [--udp|-u]} [--arp] [--icmp4] [--icmp6] [--igmp] [--mld] [--ndp] {-n num}`
 
 Arguments can be in any order and unless protocols are explicitly specified, all protocols are considered for printing.
@@ -118,11 +118,19 @@ Testing was performed on three operating systems: Windows 11 (win-x64), Nix OS a
 `./ipk-sniffer -i wlp0s20f3 -igmp`
 ![Ubuntu 22.04 igmp](tests/igmp_ubuntu.png)
 
-### (Tests with incorrect input or other error)
+### Tests with incorrect input or other error
+**Wrong format of port** (`./ipk-sniffer -i lo --tcp -p io`)
+![Port error](tests/errors/bad_port_argument.png)
+**Duplicate argument** (`./ipk-sniffer -i -i`)
+![Duplicate argument](tests/errors/duplicate_argument.png)
+**No interface name entered** (`./ipk-sniffer -i --tcp`)
+![No interface name entered](tests/errors/no_interface_name.png)
+**Port without TCP and UDP** (`./ipk-sniffer -i lo --icmpv4 -p 85`)
+![Port without TCP and UDP](tests/errors/port_without_tcpudp.png)
+**No root permission** (`./ipk-sniffer -i lo --tcp`)
+![No root permission](tests/errors/without_root_permision.png)
 
-
-
-### NIX
+## NIX
 `./ipk-sniffer -i enp03s -igmp`
 ![NIX igmp](tests/igmp_nix.png)
 `./ipk-sniffer -i enp03s -imcpv6`
