@@ -10,21 +10,32 @@ To use this application, you will need the following:
  - PacketDotNet library
 
 ### Command Line Arguments
+
 `./ipk-sniffer [-i interface | --interface interface] {-p port [--tcp|-t] [--udp|-u]} [--arp] [--icmp4] [--icmp6] [--igmp] [--mld] [--ndp] {-n num}`
 
 Arguments can be in any order and unless protocols are explicitly specified, all protocols are considered for printing.
 
-`-i|--interface interface` - interface to sniff, if this parameter is not specified or name of interface is not specified, list of avaible interfaces is printed
-`--tcp|-t` - display TCP segments
-`--udp|-u` - display UDP datagrams
-`-p port` - extends TCP and UDP protocols, can be used as source and destination part, it has to be used as combination with `--tcp|-t` or `--udp|-u `
-`--arp` - display ARP frames
-`--icmp4` - display ICMPv4 echo   
-`--icmp6` - display ICMPv6 echo
-`--ndp` - display NDP packet
-`--igmp` - display IGMP packet
-`--mld` - display MLD packet
-`-n num` - number of packets to display, if not specified, display 1 packet
+`-i|--interface interface`: interface to sniff, if this parameter is not specified or name of interface is not specified, list of avaible interfaces is printed
+
+`--tcp|-t`: display TCP segments
+
+`--udp|-u`: display UDP datagrams
+
+`-p port`: extends TCP and UDP protocols, can be used as source and destination part, it has to be used as combination with `--tcp|-t` or `--udp|-u `
+
+`--arp`: display ARP frames
+
+`--icmp4`: display ICMPv4 echo  
+
+`--icmp6`: display ICMPv6 echo
+
+`--ndp`: display NDP packet
+
+`--igmp`: display IGMP packet
+
+`--mld`: display MLD packet
+
+`-n num`: number of packets to display, if not specified, display 1 packet
 
 ## Sniffer class
 
