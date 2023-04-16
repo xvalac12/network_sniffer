@@ -25,7 +25,7 @@ namespace Network_sniffer
                 Error.print_error(7);
             }
             
-            string [] filter_arr = new string[args.Length - 2];
+            string [] filter_arr = new string[10];
             int filter_cnt = 0;
             bool print_flag = true;
             string ndp = "icmp6[icmp6type] = icmp6-neighborsolicit or icmp6[icmp6type] = icmp6-routersolicit or icmp6[icmp6type] = icmp6-routeradvert or icmp6[icmp6type] = icmp6-neighboradvert or icmp6[icmp6type] = icmp6-redirect";
@@ -83,7 +83,7 @@ namespace Network_sniffer
                         filter_cnt++;
                         break;
                     case "--icmpv6":
-                        filter_arr[filter_cnt] = "icmpv6";
+                        filter_arr[filter_cnt] = "icmp6";
                         filter_cnt++;
                         break;
                     case "--arp":
@@ -99,7 +99,7 @@ namespace Network_sniffer
                         filter_cnt++;
                         break; 
                     case "--mld":
-                        filter_arr[filter_cnt] = "mld";
+                        filter_arr[filter_cnt] = "icmp6";
                         filter_cnt++;
                         break;                     
                     case "-n":
