@@ -1,0 +1,21 @@
+﻿## Implemented functionality
+- Application
+	- command line argument parsing
+	- makefile with build, publish and clean
+	- reaction to sigint
+- Protocols
+	- TCP and UDP, with and without port
+	- ARP
+	- ICMPv4|v6
+	- IGMP, NDP
+- Informations print
+    - Timeval
+	- Frame lenght
+	- Source Mac, Port(TCP, UDP), IP address
+	- Destination MAC, Port(TCP, UDP), IP address
+	- HEX content of Packet
+## Known limitations
+- Application
+	- `make clean` do not work on windows 11 
+- Protocols
+	- MLD protocol is not supported 
