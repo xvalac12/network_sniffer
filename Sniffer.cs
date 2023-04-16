@@ -13,56 +13,80 @@ namespace Network_sniffer
 
         static void Main(string[] args)
         {
+            string [] filter_arr = new string[args.Length - 2];
+            int filter_cnt = 0;
+            bool print_flag = true;
+            string ndp = "icmp6[icmp6type] = icmp6-neighborsolicit or icmp6[icmp6type] = icmp6-routersolicit or icmp6[icmp6type] = icmp6-routeradvert or icmp6[icmp6type] = icmp6-neighboradvert or icmp6[icmp6type] = icmp6-redirect";
+
             int packet_counter = 0;
             string? name_of_interface = null;
             int? port = null;
             string? protocol_filter = null;
-            string? port_filter = null;
             int packets = 1;
 
-            for (var cnt = 0; cnt > args.Length; cnt++)
+            for (var args_cnt = 0; args_cnt < args.Length; args_cnt++)
             {
-                switch (args[cnt])
+                switch (args[args_cnt])
                 {
                     case "-i":
                     case "--interface":
-                        name_of_interface = args[++cnt];
+                        if (args.Length == 1)
+                        {
+                            print_flag = true;
+                            break;
+                        }
+                        try
+                        {
+                            name_of_interface = args[++args_cnt];
+                            print_flag = false;
+                        }
+                        catch
+                        {
+                            Error.print_error(5);
+                        }
                         break;
                     case "-p":
-                        port = int.Parse(args[++cnt]);
+                        port = int.Parse(args[++args_cnt]);
                         break;
                     case "-t":
                     case "--tcp":
-                        protocol_filter = protocol_filter + " and tcp";
+                        filter_arr[filter_cnt] = "tcp";
+                        filter_cnt++;
                         break;
                     case "-u":
                     case "--udp":
-                        protocol_filter = protocol_filter + " and udp";
+                        filter_arr[filter_cnt] = "udp";
+                        filter_cnt++;
                         break;
                     case "--icmpv4":
-                        protocol_filter = protocol_filter + " and icmpv4";
+                        filter_arr[filter_cnt] = "icmp";
+                        filter_cnt++;
                         break;
                     case "--icmpv6":
-                        protocol_filter = protocol_filter + " and icmpv6";
+                        filter_arr[filter_cnt] = "icmpv6";
+                        filter_cnt++;
                         break;
                     case "--arp":
-                        protocol_filter = protocol_filter + " and arp";
+                        filter_arr[filter_cnt] = "arp";
+                        filter_cnt++;
                         break;
                     case "--ndp":
-                        protocol_filter = protocol_filter + " and ndp";
+                        filter_arr[filter_cnt] = ndp;
+                        filter_cnt++;
                         break; 
                     case "--igmp":
-                        protocol_filter = protocol_filter + " and igmp";
+                        filter_arr[filter_cnt] = "igmp";
+                        filter_cnt++;
                         break; 
                     case "--mld":
-                        protocol_filter = protocol_filter + " and mld";
-                        break;                      
+                        filter_arr[filter_cnt] = "mld";
+                        filter_cnt++;
+                        break;                     
                     case "-n":
-                        packets = int.Parse(args[cnt]);
+                        packets = int.Parse(args[args_cnt]);
                         break;
                     default:
-                        Console.WriteLine($"Bad argument: {args[cnt]}");
-                        Environment.Exit(1);
+                        Error.print_error(1);
                         break;
                 }
             }
