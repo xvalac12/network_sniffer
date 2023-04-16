@@ -8,9 +8,16 @@ using PacketDotNet;
 
 namespace Network_sniffer
 {
+    /// <summary>
+    /// Main class of application
+    /// </summary>
     class Sniffer
     {
-
+        /// <summary>
+        /// Function for handling command line arguments
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns>Values for filtering and handling packets</returns>
         static (string, string?, int, bool) argument_handling(string[] args)
         {
             string [] filter_arr = new string[args.Length - 2];
@@ -126,6 +133,10 @@ namespace Network_sniffer
             return (filter, name_of_interface, num_of_packets, print_flag);
         }
 
+        /// <summary>
+        /// Funtion print name of all avaible interfaces and exit application.
+        /// </summary>
+        /// <param name="network_interfaces">List with info about all avaible interfaces</param>
         static void print_all_interfaces(CaptureDeviceList network_interfaces)
         {
                 Console.WriteLine("");
@@ -137,6 +148,13 @@ namespace Network_sniffer
                 Environment.Exit(0);
         }
 
+        /// <summary>
+        /// Function which will add port to udp and tcp protocol. 
+        /// If none of these is present, call error calling.
+        /// </summary>
+        /// <param name="filter_arr">Array with protocols for filtering</param>
+        /// <param name="port">Port which will be used for TCP or UDP packet cpaturing</param>
+        /// <returns>String with filter for packet capturing</returns>
         static string[] port_handling(string [] filter_arr, int? port)
         {
             var aux_flag = true;
@@ -160,6 +178,10 @@ namespace Network_sniffer
             return filter_arr;
         }
 
+        /// <summary>
+        /// Method will print hexdump of captured packet
+        /// </summary>
+        /// <param name="handledPacket">Data of packet for printing hex</param>
         static void print_hex(Packet handledPacket)
         {
             string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
@@ -175,7 +197,16 @@ namespace Network_sniffer
                 Console.WriteLine("0x" + hexdump_line);    
             }
         }
-
+        
+        /// <summary>
+        /// Method for extracting data from packet, for information about packet print.
+        /// It counts number od handled packet as well 
+        /// </summary>
+        /// <param name="sender">Object</param>
+        /// <param name="packet">Captured packet</param>
+        /// <param name="packet_counter">Current captured packet</param>
+        /// <param name="num_of_packets">Number of packets to be captured</param>
+        /// <param name="used_interface">Info about sniffed interface</param>
         private static void packet_handling(object sender, PacketCapture packet, int packet_cnt, int num_of_packets, ILiveDevice used_interface)
         {
             var handled_packet = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
@@ -233,6 +264,10 @@ namespace Network_sniffer
             }
         }
 
+        /// <summary>
+        /// Main method of application.
+        /// </summary>
+        /// <param name="args">Command line arguments</param>
         static void Main(string[] args)
         {
             string protocol_filter;
@@ -260,7 +295,6 @@ namespace Network_sniffer
                 Error.print_error(5);
                 Environment.Exit(5);
             }
-            
             try
             {
                 used_interface.Open(DeviceModes.Promiscuous);
@@ -283,7 +317,7 @@ namespace Network_sniffer
                 packet_handling(sender, packet, packet_cnt, num_of_packets, used_interface);
             };
 
-            Console.CancelKeyPress += delegate(object? sender, ConsoleCancelEventArgs e)  // https://learn.microsoft.com/en-us/dotnet/api/system.console.cancelkeypress?view=net-7.0
+            Console.CancelKeyPress += delegate(object? sender, ConsoleCancelEventArgs e)
             {
                 used_interface.StopCapture();
                 used_interface.Close();
@@ -291,11 +325,7 @@ namespace Network_sniffer
             };
 
             used_interface.StartCapture();
-            while(true)
-            {
-
-            }
-            
+            while(true){}         
         }
     }
 }

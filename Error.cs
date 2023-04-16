@@ -5,8 +5,15 @@ using System.Threading.Tasks;
 
 namespace Network_sniffer
 {
+    /// <summary>
+    /// Class for handling errors
+    /// </summary>
     public class Error
     {
+        /// <summary>
+        /// Method print error message, usage and exit program with error code
+        /// </summary>
+        /// <param name="error_code">Number which will be printed as error code</param>
         public static void print_error(int error_code)
         {
             switch(error_code)
