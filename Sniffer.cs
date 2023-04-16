@@ -20,6 +20,11 @@ namespace Network_sniffer
         /// <returns>Values for filtering and handling packets</returns>
         static (string, string?, int, bool) argument_handling(string[] args)
         {
+            if (args.Length != args.Distinct().Count())
+            {
+                Error.print_error(7);
+            }
+            
             string [] filter_arr = new string[args.Length - 2];
             int filter_cnt = 0;
             bool print_flag = true;

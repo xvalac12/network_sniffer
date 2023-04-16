@@ -36,6 +36,9 @@ namespace Network_sniffer
                 case 6:
                     Console.Error.WriteLine("Interface wasn't opened. Maybe you are not launching program with root permission?");
                     break;
+                case 7:
+                    Console.Error.WriteLine("You can't enter arguments more times");
+                    break;
                 case 99:
                     Console.Error.WriteLine("Internal Error");
                     break;
