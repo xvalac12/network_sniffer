@@ -28,6 +28,7 @@ namespace Network_sniffer
             string [] filter_arr = new string[10];
             int filter_cnt = 0;
             bool print_flag = true;
+            string mld = "icmp6[icmp6type] = icmp6-multicastlistenerreportv1 or icmp6[icmp6type] = icmp6-multicastlistenerreportv2 or icmp6[icmp6type] = icmp6-multicastlistenerquery or icmp6[icmp6type] = icmp6-multicastlistenerdone";
             string ndp = "icmp6[icmp6type] = icmp6-neighborsolicit or icmp6[icmp6type] = icmp6-routersolicit or icmp6[icmp6type] = icmp6-routeradvert or icmp6[icmp6type] = icmp6-neighboradvert or icmp6[icmp6type] = icmp6-redirect";
             string? name_of_interface = null;
             int? port = null;
@@ -99,7 +100,7 @@ namespace Network_sniffer
                         filter_cnt++;
                         break; 
                     case "--mld":
-                        filter_arr[filter_cnt] = "icmp6";
+                        filter_arr[filter_cnt] = mld;
                         filter_cnt++;
                         break;                     
                     case "-n":
@@ -212,8 +213,9 @@ namespace Network_sniffer
         /// <param name="packet_counter">Current captured packet</param>
         /// <param name="num_of_packets">Number of packets to be captured</param>
         /// <param name="used_interface">Info about sniffed interface</param>
-        private static void packet_handling(object sender, PacketCapture packet, int packet_cnt, int num_of_packets, ILiveDevice used_interface)
+        private static bool packet_handling(object sender, PacketCapture packet, int packet_cnt, int num_of_packets, ILiveDevice used_interface)
         {
+
             var handled_packet = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
             var eth_packet = handled_packet.Extract<PacketDotNet.EthernetPacket>();
             var ip_packet = handled_packet.Extract<PacketDotNet.IPPacket>();
@@ -260,13 +262,9 @@ namespace Network_sniffer
 
                 print_hex(handled_packet);
                 Console.WriteLine("");
-                if (++packet_cnt >= num_of_packets)
-                {
-                    used_interface.StopCapture();
-                    used_interface.Close();
-                    Environment.Exit(0);
-                } 
+                return true;
             }
+            return false;
         }
 
         /// <summary>
@@ -319,7 +317,15 @@ namespace Network_sniffer
 
             used_interface.OnPacketArrival += (sender, packet) =>
             { 
-                packet_handling(sender, packet, packet_cnt, num_of_packets, used_interface);
+                if (packet_handling(sender, packet, packet_cnt, num_of_packets, used_interface))
+                {
+                    if (++packet_cnt >= num_of_packets)
+                    {
+                        used_interface.StopCapture();
+                        used_interface.Close();
+                        Environment.Exit(0);
+                    } 
+                }         
             };
 
             Console.CancelKeyPress += delegate(object? sender, ConsoleCancelEventArgs e)
