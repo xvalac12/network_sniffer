@@ -125,6 +125,18 @@ namespace Network_sniffer
 
             return (filter, name_of_interface, num_of_packets, print_flag);
         }
+
+        static void print_all_interfaces(CaptureDeviceList network_interfaces)
+        {
+                Console.WriteLine("");
+                foreach(var network_interface in network_interfaces)
+                {
+                    Console.WriteLine(network_interface.Name);
+                }
+                Console.WriteLine("");
+                Environment.Exit(0);
+        }
+
         static string[] port_handling(string [] filter_arr, int? port)
         {
             var aux_flag = true;
@@ -154,29 +166,44 @@ namespace Network_sniffer
             string? name_of_interface;
             int num_of_packets;
             bool print_flag;
+            int packet_cnt = 0;
             ILiveDevice? used_interface = null;
             CaptureDeviceList network_interfaces = CaptureDeviceList.Instance;
             (protocol_filter, name_of_interface, num_of_packets, print_flag) = argument_handling(args);
 
-            Console.WriteLine("");
+            if (print_flag == true) print_all_interfaces(network_interfaces);
+            
+
             foreach(var network_interface in network_interfaces)
             {
-                Console.WriteLine(network_interface.Name);
                 if (network_interface.Name == name_of_interface)
                 {
                     used_interface = network_interface;
                 }
             }
-            Console.WriteLine("");
-
+            
             if (used_interface == null)
             {
-                Environment.Exit(2);
+                Error.print_error(5);
+                Environment.Exit(5);
             }
-                
-            used_interface.Filter = protocol_filter;
-            used_interface.Open(DeviceModes.Promiscuous);
-            int packet_counter = 0;
+            
+            try
+            {
+                used_interface.Open(DeviceModes.Promiscuous);
+            }
+            catch
+            {
+                Error.print_error(6);
+            }
+            try
+            {
+                used_interface.Filter = protocol_filter;
+            }
+            catch
+            {
+                Error.print_error(99);
+            }
 
             used_interface.OnPacketArrival += (sender, packet) =>
             { 
@@ -198,7 +225,7 @@ namespace Network_sniffer
                     Console.WriteLine("dst port: " + tcpPacket.DestinationPort);
                     Console.WriteLine("");
 
-                    if (++packet_counter > num_of_packets)
+                    if (++packet_cnt > num_of_packets)
                     {
                         used_interface.StopCapture();
                         used_interface.Close();
