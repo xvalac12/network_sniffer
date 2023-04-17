@@ -1,13 +1,13 @@
 ﻿ # IPK Project 2: Network sniffer
 ## Description of the implementation
-The application is implemented in the C# programming language with the **.NET 6.0** framework using libraries from the **base SDK** (NET SDK).  The compilation is done using a **Makefile** (*dotnet clean, build and publish*) and the `make` command (`make OS=win-x64` for windows). It has been tested to run on Windows 11, Ubuntu 22.04 and NIX operating system. The client consists of 2 classes: `Sniffer`, `Error`. Note that this application requires root privileges to capture network traffic.
+The application is implemented in the C# programming language with the **.NET 6.0** framework using libraries from the **base SDK** (NET SDK). The compilation is done using a **Makefile** (*dotnet clean, build and publish*) and the `make` command (`make OS=win-x64` for windows). It has been tested to run on Windows 11, Ubuntu 22.04 and NIX operating system. The client consists of 2 classes: `Sniffer`, `Error`. Note that this application requires root privileges to capture network traffic.
 
 ### Requirements
 To use this application, you will need the following:
 
  - C# compiler with .NET 6.0 Framework
- - SharpPcap library
- - PacketDotNet library
+ - SharpPcap library [1]
+ - PacketDotNet library [1]
 
 ### Command Line Arguments
 
@@ -67,7 +67,7 @@ This class is responsible for handling errors that may occur during the executio
 
 ## Structure of packets
 
-### TCP packet header structure [1]
+### TCP packet header structure [2]
 | Field                 | Length    | Description                                                                           |
 |-----------------------|-----------|---------------------------------------------------------------------------------------|
 | Source Port           | 2 bytes   | The port number on the sender's device                                                |
@@ -82,7 +82,7 @@ This class is responsible for handling errors that may occur during the executio
 | Urgent Pointer        | 2 bytes   | This is used to indicate the location of urgent data                                  |
 | Options               | variable  | Additional TCP options                                                                |
 
-### UDP packet header structure [2]
+### UDP packet header structure [3]
 | Field             | Length    | Description                               |
 |-------------------|-----------|-------------------------------------------|
 | Source Port       | 2 bytes   | The port number on the sender's device    |
@@ -90,14 +90,14 @@ This class is responsible for handling errors that may occur during the executio
 | Length            | 2 bytes   | The length of the entire UDP packet       |
 | Checksum          | 2 bytes   | This is used to detect errors             |
 
-### ICMP packet header structure [3]
+### ICMP packet header structure [4]
 | Field     | Length    | Description                               |
 |-----------|-----------|-------------------------------------------|
 | Type      | 1 byte    | The port number on the sender's device    |
 | Code      | 1 byte    | The port number on the recipient's device |
 | Checksum  | 2 bytes   | The length of the entire UDP packet       |
 
-### ARP frame structure [4]
+### ARP frame structure [5]
 | Field                 | Length    | Description                                                   |
 |-----------------------|-----------|---------------------------------------------------------------|
 | Hardware Type         | 2 bytes   | Specifies the type of NIC hardware being used                 |
@@ -110,7 +110,7 @@ This class is responsible for handling errors that may occur during the executio
 | Target HW Address     | 6 bytes   | Specifies the target's hardware address                       |
 | Target Prot. Address  | 4 bytes   | Specifies the target's protocol address                       |
 
-### IGMP packet header structure [5]
+### IGMP packet header structure [6]
 | Field             | Length    | Description                                                       |
 |-------------------|-----------|-------------------------------------------------------------------|
 | Type              | 1 byte    | Type of message                                                   |
@@ -118,20 +118,24 @@ This class is responsible for handling errors that may occur during the executio
 | Checksum          | 2 bytes   | The length of the entire payload of IGMP packet                   |
 | Group Address     | 4 bytes   | Varies by the type of message sent                                |
 
-## ICMPv6 vs MLD vs NDP  [6]
+## ICMPv6 vs MLD vs NDP  [7]
 MLD and NDP are subset of ICMPv6. They can be recognized by the field type of ICMPv6 packet:
 
-| type  | Name                                | Protocol    |
-|-------|-------------------------------------|-------------|
-| 130   | Multicast Listener Query            | MLD         |
-| 131   | Multicast Listener Report           | MLD         |
-| 132   | Multicast Listener Done             | MLD         |   
-| 133   | Router Solicitation                 | NDP         |
-| 134   | Router Advertisement                | NDP         |
-| 135   | Neighbor Solicitation               | NDP         |
-| 136   | Neighbor Advertisement              | NDP         |
-| 137   | Redirect Message                    | NDP         |
-| 143   | Version 2 Multicast Listener Report | MLDv2       |
+| type  | Name                                      | Protocol    |
+|-------|-------------------------------------------|-------------|
+| 128   | Echo Request                              | ICMPv6      |
+| 129   | Echo Reply                                | ICMPv6      |
+| 130   | Multicast Listener Query                  | MLD         |
+| 131   | Multicast Listener Report                 | MLD         |
+| 132   | Multicast Listener Done                   | MLD         |   
+| 133   | Router Solicitation                       | NDP         |
+| 134   | Router Advertisement                      | NDP         |
+| 135   | Neighbor Solicitation                     | NDP         |
+| 136   | Neighbor Advertisement                    | NDP         |
+| 137   | Redirect Message                          | NDP         |
+| 143   | Version 2 Multicast Listener Report       | MLDv2       |
+| 148   | Certification Path Solicitation Message   | NDP         |
+| 149   | Certification Path Advertisement Message  | NDP         |
 
 ## Testing
 Testing was performed on two operation systems: Nix OS and Ubuntu 22.04 (linux-x64). For testinf purposed was used tool _tcpreplay_ with custom _pcaps_. On the left is output of application, on the right is comparison with wireshark application.
@@ -231,13 +235,13 @@ Testing was performed on two operation systems: Nix OS and Ubuntu 22.04 (linux-x
 ![NIX ndp](tests/ndp_nix.png)
 
 ## Bibliography
-
- - [1][Transmission Control Protocol (TCP)](https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp#:~:text=Packet%20format&text=The%20IP%20data%20section%20is,size%20of%20the%20options%20field) - _Khan Academy_. Accessed 16 Apr. 2023.
- - [2][UDP Protocol | User Datagram Protocol](https://www.javatpoint.com/udp-protocol#:~:text=UDP%20Header%20Format,would%20be%2065%2C535%20minus%2020) - _Javatpoint_. Accessed 16 Apr. 2023.
- - [3][What Is ICMP Protocol.](https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages) - _Online Courses and EBooks Library_. Accessed 16 Apr. 2023.
- - [4][Address Resolution Protocol (ARP)](http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf) - _Newpaltz_. Accessed 16 Apr. 2023.
- - [5][IGMP Packet Format - InetDaemon’s IT Tutorials](https://www.inetdaemon.com/tutorials/internet/igmp/format.shtml) - _InetDaemon.Com_. Accessed 17 Apr. 2023.
- - [6][Internet Control Message Protocol Version 6 (ICMPv6) Parameters](https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml) - _Internet Assigned Numbers Authority_. Accessed 17 Apr. 2023.
- -  [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_. Accessed 21 Mar. 2023.
+ - [1][Dotpcap](https://github.com/dotpcap) - _GitHub_. Accessed 17 Apr. 2023.
+ - [2][Transmission Control Protocol (TCP)](https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp#:~:text=Packet%20format&text=The%20IP%20data%20section%20is,size%20of%20the%20options%20field) - _Khan Academy_. Accessed 16 Apr. 2023.
+ - [3][UDP Protocol | User Datagram Protocol](https://www.javatpoint.com/udp-protocol#:~:text=UDP%20Header%20Format,would%20be%2065%2C535%20minus%2020) - _Javatpoint_. Accessed 16 Apr. 2023.
+ - [4][What Is ICMP Protocol.](https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages) - _Online Courses and EBooks Library_. Accessed 16 Apr. 2023.
+ - [5][Address Resolution Protocol (ARP)](http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf) - _Newpaltz_. Accessed 16 Apr. 2023.
+ - [6][IGMP Packet Format - InetDaemon’s IT Tutorials](https://www.inetdaemon.com/tutorials/internet/igmp/format.shtml) - _InetDaemon.Com_. Accessed 17 Apr. 2023.
+ - [7][Internet Control Message Protocol Version 6 (ICMPv6) Parameters](https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml) - _Internet Assigned Numbers Authority_. Accessed 17 Apr. 2023.
+ - [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_. Accessed 21 Mar. 2023.
 
 
