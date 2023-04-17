@@ -277,17 +277,28 @@ namespace Network_sniffer
                             if(ip_packet.Extract<IcmpV4Packet>() != null) correct_catch = true;
                             break;
                         case "icmpv6":
-                            if(ip_packet.Extract<IcmpV6Packet>() != null) correct_catch = true;
+                            if(ip_packet.Extract<IcmpV6Packet>() != null)
+                            {
+                                switch(ip_packet.Extract<IcmpV6Packet>().Type)
+                                {
+                                    case IcmpV6Type.EchoRequest:            //128
+                                    case IcmpV6Type.EchoReply:              //129 
+                                        correct_catch = true;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                             break;
                         case "mld":
                             if(ip_packet.Extract<IcmpV6Packet>() != null)
                             {
                                 switch(ip_packet.Extract<IcmpV6Packet>().Type)
                                 {
-                                    case IcmpV6Type.MulticastListenerQuery:             //130
-                                    case IcmpV6Type.MulticastListenerReport:            //131
-                                    case IcmpV6Type.MulticastListenerDone:              //132
-                                    case IcmpV6Type.Version2MulticastListenerReport:    //144
+                                    case IcmpV6Type.MulticastListenerQuery:                 //130
+                                    case IcmpV6Type.MulticastListenerReport:                //131
+                                    case IcmpV6Type.MulticastListenerDone:                  //132
+                                    case IcmpV6Type.Version2MulticastListenerReport:        //144
                                         correct_catch = true;
                                         break;
                                     default:
@@ -302,11 +313,13 @@ namespace Network_sniffer
                                 {
                                     switch(ip_packet.Extract<IcmpV6Packet>().Type)
                                     {
-                                        case IcmpV6Type.RouterSolicitation:             //133
-                                        case IcmpV6Type.RouterAdvertisement:            //134
-                                        case IcmpV6Type.NeighborSolicitation:           //135
-                                        case IcmpV6Type.NeighborAdvertisement:          //136
-                                        case IcmpV6Type.RedirectMessage:                //137
+                                        case IcmpV6Type.RouterSolicitation:                     //133
+                                        case IcmpV6Type.RouterAdvertisement:                    //134
+                                        case IcmpV6Type.NeighborSolicitation:                   //135
+                                        case IcmpV6Type.NeighborAdvertisement:                  //136
+                                        case IcmpV6Type.RedirectMessage:                        //137
+                                        case IcmpV6Type.CertificationPathSolicitationMessage:   //148
+                                        case IcmpV6Type.CertificationPathAdvertisementMessage:  //149
                                             correct_catch = true;
                                             break;
                                         default:
