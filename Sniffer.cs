@@ -1,12 +1,10 @@
 ﻿using SharpPcap;
 using PacketDotNet;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
-using System.Globalization;
+
 
 namespace Network_sniffer
 {
@@ -237,6 +235,7 @@ namespace Network_sniffer
                 if (Regex.Match(filter_arr[filter_cnt], @"^(udp|tcp)(\d){1,5}$").Success)
                 {
                     port = int.Parse(filter_arr[filter_cnt].Substring(3));
+                    filter_arr[filter_cnt] = filter_arr[filter_cnt].Remove(3);
                 }
 
                 if(ip_packet == null && filter_arr [filter_cnt] == "arp")
