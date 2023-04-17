@@ -1,8 +1,0 @@
-IPK co treba urobit:
-
-test input do monospace ``test``
-doxygen
-otestovat podla testov
-mozno este kus popisat fungovanie
-ako sa spravat, ked nie je zadany filter (pouzit vsetky protokoly alebo len tie zadane)
-timeout
