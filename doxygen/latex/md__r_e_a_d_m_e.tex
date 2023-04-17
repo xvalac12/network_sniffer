@@ -1,0 +1,294 @@
+\hypertarget{md__r_e_a_d_m_e_autotoc_md3}{}\doxysection{Description of the implementation}\label{md__r_e_a_d_m_e_autotoc_md3}
+The application is implemented in the C\# programming language with the $\ast$$\ast$.NET 6.\+0$\ast$$\ast$ framework using libraries from the {\bfseries{base SDK}} (NET SDK). The compilation is done using a {\bfseries{Makefile}} ({\itshape dotnet clean, build and publish}) and the {\ttfamily make} command ({\ttfamily make OS=win-\/x64} for windows). It has been tested to run on Windows 11, Ubuntu 22.\+04 and NIX operating system. The client consists of 2 classes\+: {\ttfamily Sniffer}, {\ttfamily Error}. Note that this application requires root privileges to capture network traffic.\hypertarget{md__r_e_a_d_m_e_autotoc_md4}{}\doxysubsection{Requirements}\label{md__r_e_a_d_m_e_autotoc_md4}
+To use this application, you will need the following\+:
+
+
+\begin{DoxyItemize}
+\item C\# compiler with .NET 6.\+0 Framework
+\item Sharp\+Pcap library \mbox{[}1\mbox{]}
+\item Packet\+Dot\+Net library \mbox{[}1\mbox{]}
+\end{DoxyItemize}\hypertarget{md__r_e_a_d_m_e_autotoc_md5}{}\doxysubsection{Command Line Arguments}\label{md__r_e_a_d_m_e_autotoc_md5}
+{\ttfamily ./ipk-\/sniffer \mbox{[}-\/i interface $\vert$ -\/-\/interface interface\mbox{]} \{-\/p port \mbox{[}-\/-\/tcp$\vert$-\/t\mbox{]} \mbox{[}-\/-\/udp$\vert$-\/u\mbox{]}\} \mbox{[}-\/-\/arp\mbox{]} \mbox{[}-\/-\/icmp4\mbox{]} \mbox{[}-\/-\/icmp6\mbox{]} \mbox{[}-\/-\/igmp\mbox{]} \mbox{[}-\/-\/mld\mbox{]} \mbox{[}-\/-\/ndp\mbox{]} \{-\/n num\}}
+
+Arguments can be in any order and unless protocols are explicitly specified, all protocols are considered for printing.
+
+{\ttfamily -\/i$\vert$-\/-\/interface interface}\+: interface to sniff, if this parameter is not specified or name of interface is not specified, list of avaible interfaces is printed
+
+{\ttfamily -\/-\/tcp$\vert$-\/t}\+: display TCP segments
+
+{\ttfamily -\/-\/udp$\vert$-\/u}\+: display UDP datagrams
+
+{\ttfamily -\/p port}\+: extends TCP and UDP protocols, can be used as source and destination part, it has to be used as combination with {\ttfamily -\/-\/tcp$\vert$-\/t} or {\ttfamily -\/-\/udp$\vert$-\/u}
+
+{\ttfamily -\/-\/arp}\+: display ARP frames
+
+{\ttfamily -\/-\/icmp4}\+: display ICMPv4 echo ~\newline
+
+
+{\ttfamily -\/-\/icmp6}\+: display ICMPv6 echo
+
+{\ttfamily -\/-\/ndp}\+: display NDP packet
+
+{\ttfamily -\/-\/igmp}\+: display IGMP packet
+
+{\ttfamily -\/-\/mld}\+: display MLD packet
+
+{\ttfamily -\/n num}\+: number of packets to display, if not specified, display 1 packet\hypertarget{md__r_e_a_d_m_e_autotoc_md6}{}\doxysection{Sniffer class}\label{md__r_e_a_d_m_e_autotoc_md6}
+The Sniffer class contains the main class of the application. The {\ttfamily argument\+\_\+handling()} method is responsible for parsing the command-\/line arguments and returning the necessary values for packet filtering and handling. The method returns a tuple containing the array with filters, the name of the interface to sniff, the number of packets to capture, and a boolean flag indicating whether to print the list of available network interfaces.
+
+The {\ttfamily print\+\_\+all\+\_\+interfaces()} method prints the name of all available network interfaces and exits the application.
+
+Method {\ttfamily port\+\_\+handling()} adds the specified port number to the UDP or TCP protocol filter, depending on which one is present. If none of them is present, the method raises an error.
+
+Application captures packets using the {\ttfamily Capture\+Device} class from the {\ttfamily Sharp\+Pcap} library and analyzes them using the {\ttfamily Packet} class from the {\ttfamily Packet\+Dot\+Net} library. After that, application initializes the network interface and starts capturing packets.
+
+Captured packet are processed by {\ttfamily packet\+\_\+handling()} method, which extracts packet to parts (Ethernet part, Internet Protocol part, TCP and UDP part). After that, {\ttfamily protocol\+\_\+filter} method find out if the user has specified that they want to print this type packet. For each captured packet, it prints source and destination IP addresses about the packet, including source and destination MAC address, source and destination IP address (except ARP), source and destination port(only TCP and UDP). Then the {\ttfamily print\+\_\+hex()} method prints hexdump of packet.\hypertarget{md__r_e_a_d_m_e_autotoc_md7}{}\doxysection{Error class}\label{md__r_e_a_d_m_e_autotoc_md7}
+This class is responsible for handling errors that may occur during the execution of the application. Method {\ttfamily print\+\_\+error()} takes an integer error code as its parameter and prints the appropriate error message to the standard error stream. After printing the error message, it also prints the usage information for the \mbox{\hyperlink{namespace_network__sniffer}{Network\+\_\+sniffer}} program and exits the program with the specified error code.
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Error Code   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Error Message    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Error Code   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Error Message    }\\\cline{1-2}
+\endhead
+1   &Wrong argument entered    \\\cline{1-2}
+2   &Wrong or no port number after -\/p    \\\cline{1-2}
+3   &Entered port without using --tcp$|$-\/t or --udp$|$-\/u    \\\cline{1-2}
+4   &Wrong or no number after -\/n    \\\cline{1-2}
+5   &Wrong or no interface name entered    \\\cline{1-2}
+6   &Interface wasn\textquotesingle{}t opened. Maybe you are not launching program with root permission?    \\\cline{1-2}
+7   &You can\textquotesingle{}t enter arguments more times    \\\cline{1-2}
+99   &Internal Error   \\\cline{1-2}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md8}{}\doxysection{Structure of packets}\label{md__r_e_a_d_m_e_autotoc_md8}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md9}{}\doxysubsection{TCP packet header structure \mbox{[}2\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md9}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Source Port   &2 bytes   &The port number on the sender\textquotesingle{}s device    \\\cline{1-3}
+Destination Port   &2 bytes   &The port number on the recipient\textquotesingle{}s device    \\\cline{1-3}
+Sequence Number   &4 bytes   &Used to keep track of the order of data packets sent between the sender and recipient    \\\cline{1-3}
+Acknowledgment Number   &4 bytes   &Used to acknowledge receipt of data packets by the recipient    \\\cline{1-3}
+Data Offset   &4 bits   &Size of the TCP header    \\\cline{1-3}
+Reserved   &6 bits   &These bits are reserved for future use    \\\cline{1-3}
+Flags   &6 bits   &This field contains several flags that control the behavior    \\\cline{1-3}
+Window Size   &2 bytes   &The number of bytes the sender is willing to receive before it expects an ACK    \\\cline{1-3}
+Checksum   &2 bytes   &This is used to detect errors    \\\cline{1-3}
+Urgent Pointer   &2 bytes   &This is used to indicate the location of urgent data    \\\cline{1-3}
+Options   &variable   &Additional TCP options   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md10}{}\doxysubsection{UDP packet header structure \mbox{[}3\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md10}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Source Port   &2 bytes   &The port number on the sender\textquotesingle{}s device    \\\cline{1-3}
+Destination Port   &2 bytes   &The port number on the recipient\textquotesingle{}s device    \\\cline{1-3}
+Length   &2 bytes   &The length of the entire UDP packet    \\\cline{1-3}
+Checksum   &2 bytes   &This is used to detect errors   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md11}{}\doxysubsection{ICMP packet header structure \mbox{[}4\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md11}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Type   &1 byte   &The port number on the sender\textquotesingle{}s device    \\\cline{1-3}
+Code   &1 byte   &The port number on the recipient\textquotesingle{}s device    \\\cline{1-3}
+Checksum   &2 bytes   &The length of the entire UDP packet   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md12}{}\doxysubsection{ARP frame structure \mbox{[}5\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md12}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Hardware Type   &2 bytes   &Specifies the type of NIC hardware being used    \\\cline{1-3}
+Protocol Type   &2 bytes   &Specifies the type of protocol addresses in upper protocol    \\\cline{1-3}
+Hardware length   &1 byte   &Specifies the length of the hardware address    \\\cline{1-3}
+Protocol length   &1 byte   &Specifies the length of the protocol address    \\\cline{1-3}
+Operation   &2 bytes   &Specifies the type of ARP packet, such as request or reply    \\\cline{1-3}
+Source HW Address   &6 bytes   &Specifies the sender\textquotesingle{}s hardware address    \\\cline{1-3}
+Source Prot. Address   &4 bytes   &Specifies the sender\textquotesingle{}s protocol address    \\\cline{1-3}
+Target HW Address   &6 bytes   &Specifies the target\textquotesingle{}s hardware address    \\\cline{1-3}
+Target Prot. Address   &4 bytes   &Specifies the target\textquotesingle{}s protocol address   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md13}{}\doxysubsection{IGMP packet header structure \mbox{[}6\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md13}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Length   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Type   &1 byte   &Type of message    \\\cline{1-3}
+Max Response Time   &1 byte   &The time in which is host allowed to produce and send a report    \\\cline{1-3}
+Checksum   &2 bytes   &The length of the entire payload of IGMP packet    \\\cline{1-3}
+Group Address   &4 bytes   &Varies by the type of message sent   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md14}{}\doxysection{ICMPv6 vs MLD vs NDP  \mbox{[}7\mbox{]}}\label{md__r_e_a_d_m_e_autotoc_md14}
+MLD and NDP are subset of ICMPv6. They can be recognized by the field type of ICMPv6 packet\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Name   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Protocol    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Name   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Protocol    }\\\cline{1-3}
+\endhead
+128   &Echo Request   &ICMPv6    \\\cline{1-3}
+129   &Echo Reply   &ICMPv6    \\\cline{1-3}
+130   &Multicast Listener Query   &MLD    \\\cline{1-3}
+131   &Multicast Listener Report   &MLD    \\\cline{1-3}
+132   &Multicast Listener Done   &MLD    \\\cline{1-3}
+133   &Router Solicitation   &NDP    \\\cline{1-3}
+134   &Router Advertisement   &NDP    \\\cline{1-3}
+135   &Neighbor Solicitation   &NDP    \\\cline{1-3}
+136   &Neighbor Advertisement   &NDP    \\\cline{1-3}
+137   &Redirect Message   &NDP    \\\cline{1-3}
+143   &Version 2 Multicast Listener Report   &MLDv2    \\\cline{1-3}
+148   &Certification Path Solicitation Message   &NDP    \\\cline{1-3}
+149   &Certification Path Advertisement Message   &NDP   \\\cline{1-3}
+\end{longtabu}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md15}{}\doxysection{Testing}\label{md__r_e_a_d_m_e_autotoc_md15}
+Testing was performed on two operation systems\+: Nix OS and Ubuntu 22.\+04 (linux-\/x64). For testinf purposed was used tool {\itshape tcpreplay} with custom {\itshape pcaps}. On the left is output of application, on the right is comparison with wireshark application.\hypertarget{md__r_e_a_d_m_e_autotoc_md16}{}\doxysubsection{Protocol type tested}\label{md__r_e_a_d_m_e_autotoc_md16}
+
+\begin{DoxyItemize}
+\item ARP
+\item TCP
+\begin{DoxyItemize}
+\item with/out port
+\end{DoxyItemize}
+\item UDP
+\begin{DoxyItemize}
+\item with/out port
+\end{DoxyItemize}
+\item IGMP
+\begin{DoxyItemize}
+\item IGMPv1$\vert$v2$\vert$v3
+\item IGMPv2\+\_\+query$\vert$report
+\end{DoxyItemize}
+\item MLD
+\begin{DoxyItemize}
+\item MLDv1$\vert$v2
+\end{DoxyItemize}
+\item NDP
+\item ICMP
+\begin{DoxyItemize}
+\item ICMPv4$\vert$v6
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md__r_e_a_d_m_e_autotoc_md17}{}\doxysection{Ubuntu 22.\+04}\label{md__r_e_a_d_m_e_autotoc_md17}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md18}{}\doxysubsection{Tests with correct input}\label{md__r_e_a_d_m_e_autotoc_md18}
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/arp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/icmpv4}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/icmpv6}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/tcp -\/p 443}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/tcp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/udp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i wlp0s20f3 -\/-\/igmp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i lo -\/-\/mld}
+
+\hypertarget{md__r_e_a_d_m_e_autotoc_md19}{}\doxysubsection{Tests with incorrect input or other error}\label{md__r_e_a_d_m_e_autotoc_md19}
+{\bfseries{Wrong format of port}} ({\ttfamily ./ipk-\/sniffer -\/i lo -\/-\/tcp -\/p io})
+
+
+
+{\bfseries{Duplicate argument}} ({\ttfamily ./ipk-\/sniffer -\/i -\/i})
+
+
+
+{\bfseries{No interface name entered}} ({\ttfamily ./ipk-\/sniffer -\/i -\/-\/tcp})
+
+
+
+{\bfseries{Port without TCP and UDP}} ({\ttfamily ./ipk-\/sniffer -\/i lo -\/-\/icmpv4 -\/p 85})
+
+
+
+{\bfseries{No root permission}} ({\ttfamily ./ipk-\/sniffer -\/i lo -\/-\/tcp})
+
+\hypertarget{md__r_e_a_d_m_e_autotoc_md20}{}\doxysection{NIX}\label{md__r_e_a_d_m_e_autotoc_md20}
+{\ttfamily ./ipk-\/sniffer -\/i enp03s -\/-\/igmp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i enp03s -\/-\/imcpv6}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i enp03s -\/-\/udp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i enp03s -\/-\/tcp}
+
+
+
+{\ttfamily ./ipk-\/sniffer -\/i enp03s -\/-\/ndp}
+
+\hypertarget{md__r_e_a_d_m_e_autotoc_md21}{}\doxysection{Bibliography}\label{md__r_e_a_d_m_e_autotoc_md21}
+
+\begin{DoxyItemize}
+\item \mbox{[}1\mbox{]}\href{https://github.com/dotpcap}{\texttt{ Dotpcap}} -\/ {\itshape Git\+Hub}. Accessed 17 Apr. 2023.
+\item \mbox{[}2\mbox{]}\href{https://www.khanacademy.org/computing/computers-and-internet/xcae6f4a7ff015e7d:the-internet/xcae6f4a7ff015e7d:transporting-packets/a/transmission-control-protocol--tcp\#:~:text=Packet\%20format&text=The\%20IP\%20data\%20section\%20is,size\%20of\%20the\%20options\%20field}{\texttt{ Transmission Control Protocol (TCP)}} -\/ {\itshape Khan Academy}. Accessed 16 Apr. 2023.
+\item \mbox{[}3\mbox{]}\href{https://www.javatpoint.com/udp-protocol\#:~:text=UDP\%20Header\%20Format,would\%20be\%2065\%2C535\%20minus\%2020}{\texttt{ UDP Protocol $\vert$ User Datagram Protocol}} -\/ {\itshape Javatpoint}. Accessed 16 Apr. 2023.
+\item \mbox{[}4\mbox{]}\href{https://www.tutorialspoint.com/what-is-icmp-protocol\#:~:text=ICMP\%20Message\%20Format,255\%20are\%20the\%20data\%20messages}{\texttt{ What Is ICMP Protocol.}} -\/ {\itshape Online Courses and EBooks Library}. Accessed 16 Apr. 2023.
+\item \mbox{[}5\mbox{]}\href{http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf}{\texttt{ Address Resolution Protocol (ARP)}} -\/ {\itshape Newpaltz}. Accessed 16 Apr. 2023.
+\item \mbox{[}6\mbox{]}\href{https://www.inetdaemon.com/tutorials/internet/igmp/format.shtml}{\texttt{ IGMP Packet Format -\/ Inet\+Daemon’s IT Tutorials}} -\/ {\itshape Inet\+Daemon.\+Com}. Accessed 17 Apr. 2023.
+\item \mbox{[}7\mbox{]}\href{https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml}{\texttt{ Internet Control Message Protocol Version 6 (ICMPv6) Parameters}} -\/ {\itshape Internet Assigned Numbers Authority}. Accessed 17 Apr. 2023.
+\item \href{https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master}{\texttt{ NESFIT/\+IPK-\/\+Projekty -\/ IPK-\/\+Projekty -\/ FIT -\/ VUT Brno -\/ Git.}} {\itshape FIT -\/ VUT Brno -\/ Git}. Accessed 21 Mar. 2023. 
+\end{DoxyItemize}
