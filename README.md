@@ -110,7 +110,15 @@ This class is responsible for handling errors that may occur during the executio
 | Target HW Address     | 6 bytes   | Specifies the target's hardware address                       |
 | Target Prot. Address  | 4 bytes   | Specifies the target's protocol address                       |
 
-## ICMPv6 vs MLD vs NDP  [5]
+### IGMP packet header structure [5]
+| Field             | Length    | Description                                                       |
+|-------------------|-----------|-------------------------------------------------------------------|
+| Type              | 1 byte    | Type of message                                                   |
+| Max Response Time | 1 byte    | The time in which is host allowed to produce and send a report    |
+| Checksum          | 2 bytes   | The length of the entire payload of IGMP packet                   |
+| Group Address     | 4 bytes   | Varies by the type of message sent                                |
+
+## ICMPv6 vs MLD vs NDP  [6]
 MLD and NDP are subset of ICMPv6. They can be recognized by the field type of ICMPv6 packet:
 
 | type  | Name                                | Protocol    |
@@ -128,46 +136,98 @@ MLD and NDP are subset of ICMPv6. They can be recognized by the field type of IC
 ## Testing
 Testing was performed on two operation systems: Nix OS and Ubuntu 22.04 (linux-x64). For testinf purposed was used tool _tcpreplay_ with custom _pcaps_. On the left is output of application, on the right is comparison with wireshark application.
 
+### Protocol type tested
+ - ARP
+ - TCP
+   - with/out port
+ - UDP
+   - with/out port
+ - IGMP
+   - IGMPv1|v2|v3
+   - IGMPv2_query|report
+ - MLD
+   - MLDv1|v2
+ - NDP
+ - ICMP
+   - ICMPv4|v6
+
 ## Ubuntu 22.04 
-### (Tests with correct input)
+### Tests with correct input
 
 ``./ipk-sniffer -i wlp0s20f3 --arp``
+
 ![Ubuntu 22.04 arp](tests/arp_ubuntu.png)
-``./ipk-sniffer -i wlp0s20f3 --arp``
-![Ubuntu 22.04 icmpv4](tests/icmpv4_ubuntu.png)
+
 ``./ipk-sniffer -i wlp0s20f3 --icmpv4``
+
+![Ubuntu 22.04 icmpv4](tests/icmpv4_ubuntu.png)
+
+``./ipk-sniffer -i wlp0s20f3 --icmpv6``
+
 ![Ubuntu 22.04 icmpv6](tests/icmpv6_ubuntu.png)
+
 ``./ipk-sniffer -i wlp0s20f3 --tcp -p 443``
+
 ![Ubuntu 22.04 tcp with port](tests/tcp_with_port_ubuntu.png)
+
 ``./ipk-sniffer -i wlp0s20f3 --tcp``
+
 ![Ubuntu 22.04 tpc without port](tests/tcp_without_port_ubuntu.png)
+
 ``./ipk-sniffer -i wlp0s20f3 --udp``
+
 ![Ubuntu 22.04 udp](tests/udp_ubuntu.png)
+
 ``./ipk-sniffer -i wlp0s20f3 --igmp``
+
 ![Ubuntu 22.04 igmp](tests/igmp_ubuntu.png)
 
+``./ipk-sniffer -i lo --mld``
+
+![Ubuntu 22.04 mld](tests/ubuntu_mld.png)
+
 ### Tests with incorrect input or other error
+
 **Wrong format of port** (``./ipk-sniffer -i lo --tcp -p io``)
+
 ![Port error](tests/errors/bad_port_argument.png)
+
 **Duplicate argument** (``./ipk-sniffer -i -i``)
+
 ![Duplicate argument](tests/errors/duplicate_argument.png)
+
 **No interface name entered** (``./ipk-sniffer -i --tcp``)
+
 ![No interface name entered](tests/errors/no_interface_name.png)
+
 **Port without TCP and UDP** (``./ipk-sniffer -i lo --icmpv4 -p 85``)
+
 ![Port without TCP and UDP](tests/errors/port_without_tcpudp.png)
+
 **No root permission** (``./ipk-sniffer -i lo --tcp``)
+
 ![No root permission](tests/errors/without_root_permision.png)
 
 ## NIX
+
 ``./ipk-sniffer -i enp03s --igmp``
+
 ![NIX igmp](tests/igmp_nix.png)
+
 ``./ipk-sniffer -i enp03s --imcpv6``
+
 ![NIX icmpv6](tests/imcpv6_nix.png)
+
 ``./ipk-sniffer -i enp03s --udp``
+
 ![NIX udp](tests/udp_nix.png)
+
 ``./ipk-sniffer -i enp03s --tcp``
+
 ![NIX tcp](tests/tcp_nix.png)
+
 ``./ipk-sniffer -i enp03s --ndp``
+
 ![NIX ndp](tests/ndp_nix.png)
 
 ## Bibliography
@@ -176,7 +236,8 @@ Testing was performed on two operation systems: Nix OS and Ubuntu 22.04 (linux-x
  - [2][UDP Protocol | User Datagram Protocol](https://www.javatpoint.com/udp-protocol#:~:text=UDP%20Header%20Format,would%20be%2065%2C535%20minus%2020) - _Javatpoint_. Accessed 16 Apr. 2023.
  - [3][What Is ICMP Protocol.](https://www.tutorialspoint.com/what-is-icmp-protocol#:~:text=ICMP%20Message%20Format,255%20are%20the%20data%20messages) - _Online Courses and EBooks Library_. Accessed 16 Apr. 2023.
  - [4][Address Resolution Protocol (ARP)](http://www.cs.newpaltz.edu/~easwaran/CCN/Week13/ARP.pdf) - _Newpaltz_. Accessed 16 Apr. 2023.
- - [5][Internet Control Message Protocol Version 6 (ICMPv6) Parameters](https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml) - _Internet Assigned Numbers Authority_. Accessed 17 Apr. 2023.
+ - [5][IGMP Packet Format - InetDaemon’s IT Tutorials](https://www.inetdaemon.com/tutorials/internet/igmp/format.shtml) - _InetDaemon.Com_. Accessed 17 Apr. 2023.
+ - [6][Internet Control Message Protocol Version 6 (ICMPv6) Parameters](https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml) - _Internet Assigned Numbers Authority_. Accessed 17 Apr. 2023.
  -  [NESFIT/IPK-Projekty - IPK-Projekty - FIT - VUT Brno - Git.](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master) _FIT - VUT Brno - Git_. Accessed 21 Mar. 2023.
 
 
