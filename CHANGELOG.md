@@ -3,19 +3,20 @@
 	- command line argument parsing
 	- makefile with build, publish and clean
 	- reaction to sigint
+	- packet filtering
 - Protocols
 	- TCP and UDP, with and without port
 	- ARP
 	- ICMPv4|v6
-	- IGMP, NDP
+	- IGMP
+	- NDP,MLD
 - Informations print
     - Timeval
 	- Frame lenght
-	- Source Mac, Port(TCP, UDP), IP address
-	- Destination MAC, Port(TCP, UDP), IP address
+	- Source and destination MAC address 
+	- Source and destiantion IP address (Except ARP)
+	- Source and destination Port (TCP, UDP only)
 	- HEX content of Packet
 ## Known limitations
 - Application
 	- `make clean` do not work on windows 11 
-- Protocols
-	- MLD protocol is not supported 
