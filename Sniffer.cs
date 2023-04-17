@@ -160,7 +160,7 @@ namespace Network_sniffer
         /// Funtion print name of all avaible interfaces and exit application.
         /// </summary>
         /// <param name="network_interfaces">List with info about all avaible interfaces</param>
-        private static void print_all_interfaces(CaptureDeviceList network_interfaces)
+        static void print_all_interfaces(CaptureDeviceList network_interfaces)
         {
                 Console.WriteLine("");
                 foreach(var network_interface in network_interfaces)
@@ -178,7 +178,7 @@ namespace Network_sniffer
         /// <param name="filter_arr">Array with protocols for filtering</param>
         /// <param name="port">Port which will be used for TCP or UDP packet cpaturing</param>
         /// <returns>String array with filter for packet capturing</returns>
-        private static string[] port_handling(string [] filter_arr, int? port)
+        static string[] port_handling(string [] filter_arr, int? port)
         {
             var aux_flag = true;
             for (int filter_cnt = 0; filter_cnt < filter_arr.Length; filter_cnt++)
@@ -348,7 +348,6 @@ namespace Network_sniffer
             return false;   
         }
 
-
         /// <summary>
         /// Method for extracting data from packet, for information about packet print.
         /// It counts number od handled packet as well 
@@ -357,7 +356,7 @@ namespace Network_sniffer
         /// <param name="packet">Captured packet</param>
         /// <param name="used_interface">Info about sniffed interface</param>
         /// <returns>True if packet was handled, false if not</returns>
-        private static bool packet_handling(object sender, PacketCapture packet, string [] filter_arr, ILiveDevice used_interface)
+        static bool packet_handling(object sender, PacketCapture packet, string [] filter_arr, ILiveDevice used_interface)
         {
             var handled_packet = Packet.ParsePacket(packet.GetPacket().LinkLayerType, packet.GetPacket().Data);
             var eth_packet = handled_packet.Extract<PacketDotNet.EthernetPacket>();
