@@ -204,17 +204,19 @@ namespace Network_sniffer
         /// <param name="handledPacket">Data of packet for printing hex</param>
         static void print_hex(Packet handledPacket)
         {
+            int line = 0;
             string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
             for (int i = 3; i < packet_hexdump.Length-1; i++)
             {
-                var hexdump_line = packet_hexdump[i].Substring(6);
-        
-                hexdump_line = hexdump_line.Remove(4, 1);
-                hexdump_line = hexdump_line.Remove(28, 1);
-                hexdump_line = hexdump_line.Remove(52, 1);
-                hexdump_line = hexdump_line.Remove(53, 1);
-
-                Console.WriteLine("0x" + hexdump_line);   
+                var hexdump_line = packet_hexdump[i].Substring(10);
+                
+                hexdump_line = hexdump_line.Remove(0, 1);
+                hexdump_line = hexdump_line.Remove(24, 1);
+                hexdump_line = hexdump_line.Remove(48, 1);
+                hexdump_line = hexdump_line.Remove(49, 1);
+                var hex_line = line.ToString("x4");
+                Console.WriteLine("0x" + hex_line + hexdump_line);
+                line = line + 16;   
             }
         }
         
