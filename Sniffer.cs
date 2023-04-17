@@ -26,6 +26,7 @@ namespace Network_sniffer
                 Error.print_error(7);
             }
 
+            // check for one argument entered
             if (args.Length == 1 && (args[0] != "-i" && args[0] != "--interface" ))
             {
                 Error.print_error(1);
@@ -34,11 +35,13 @@ namespace Network_sniffer
             string [] filter_arr = new string[10];
             int filter_cnt = 0;
             bool print_flag = true;
+            // aux array in case of no protocol entered
             string [] aux_filter_arr = {"arp", "tcp", "udp", "icmpv6", "icmpv4", "igmp", "ndp", "mld"};
             string? name_of_interface = null;
             int? port = null;
             int num_of_packets = 1;
 
+            // commandl line arguments parser
             for (var args_cnt = 0; args_cnt < args.Length; args_cnt++)
             {
                 switch (args[args_cnt])
@@ -123,6 +126,7 @@ namespace Network_sniffer
                         break;
                 }
             }
+            //deleting blank elements from array
             try
             {
                 filter_arr = filter_arr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
@@ -132,6 +136,7 @@ namespace Network_sniffer
                 Error.print_error(99);
             }
 
+            // check for duplicate command line arguments
             if (filter_arr.Length != filter_arr.Distinct().Count())
             {
                 Error.print_error(7);
@@ -142,6 +147,7 @@ namespace Network_sniffer
                 filter_arr = port_handling(filter_arr, port);
             }
 
+            // if no protocol is entered
             if (filter_arr.Length == 0)
             {
                 return (aux_filter_arr, name_of_interface, num_of_packets, print_flag);
@@ -202,7 +208,7 @@ namespace Network_sniffer
         /// <param name="handledPacket">Data of packet for printing hex</param>
         static void print_hex(Packet handledPacket)
         {
-            int line = 0;
+            int line_num = 0;
             string[] packet_hexdump = handledPacket.PrintHex().Split('\n');
             for (int i = 3; i < packet_hexdump.Length-1; i++)
             {
@@ -212,9 +218,11 @@ namespace Network_sniffer
                 hexdump_line = hexdump_line.Remove(24, 1);
                 hexdump_line = hexdump_line.Remove(48, 1);
                 hexdump_line = hexdump_line.Remove(49, 1);
-                var hex_line = line.ToString("x4");
+
+                // changed line num to hex format
+                var hex_line = line_num.ToString("x4");
                 Console.WriteLine("0x" + hex_line + hexdump_line);
-                line = line + 16;   
+                line_num = line_num + 16;   
             }
         }
         
@@ -232,6 +240,7 @@ namespace Network_sniffer
 
             for (int filter_cnt = 0; filter_cnt < filter_arr.Length; filter_cnt++)
             {
+                // Regex check if there is udp or tcp with port
                 if (Regex.Match(filter_arr[filter_cnt], @"^(udp|tcp)(\d){1,5}$").Success)
                 {
                     port = int.Parse(filter_arr[filter_cnt].Substring(3));
@@ -356,12 +365,14 @@ namespace Network_sniffer
             var tcp_packet = handled_packet.Extract<PacketDotNet.TcpPacket>();                
             var udp_packet = handled_packet.Extract<PacketDotNet.UdpPacket>();
 
+            // if packet has no ethernet part or filter was not entered 
             if (eth_packet != null && protocol_filter(handled_packet, filter_arr))
             {
                 var date = packet.Header.Timeval.Date;  
                 var source_MAC = "src MAC: " + eth_packet.SourceHardwareAddress;
                 var destination_MAC = "dst MAC: " + eth_packet.DestinationHardwareAddress;
 
+                // inserting : to MAC address
                 for (int cnt = 19; cnt >= 11; cnt = cnt - 2)
                 {
                     source_MAC = source_MAC.Insert(cnt, ":");
@@ -373,6 +384,7 @@ namespace Network_sniffer
                 Console.WriteLine(destination_MAC);
                 Console.WriteLine("frame lenght: " + packet.Data.Length + " bytes");
 
+                // if packet != ARP
                 if (ip_packet != null)
                 {   
                     Console.WriteLine("src IP: " + ip_packet.SourceAddress);
@@ -418,8 +430,7 @@ namespace Network_sniffer
 
             if (print_flag == true) print_all_interfaces(network_interfaces);
             
-
-            foreach(var network_interface in network_interfaces)
+            foreach (var network_interface in network_interfaces)
             {
                 if (network_interface.Name == name_of_interface)
                 {
